@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+salida/*
+!salida/.gitkeep
+pruebas_*/
+audit_*/
+precision_stress/
+resultados/
+*.log

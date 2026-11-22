@@ -1,0 +1,129 @@
+{
+  "_comment": "Parametros del sistema. Todos los umbrales deben justificarse con calibrate.py sobre imagenes reales del montaje.",
+  "preproc": {
+    "max_width": 1600,
+    "blur_ksize": 5
+  },
+  "felt_lab": {
+    "_comment": "Objeto = (a* > a_felt_max y L >= l_obj_low) o (L >= l_obj_min y a* > a_bright_min) (Lab OpenCV). Medido: fieltro a* -16..-5, sombra L 50-90, fieltro bajo el flash L hasta 205 con a* ~ -15; dado a* >= +7 (luz calida) o ~0 (luz neutra), borde del dado mezclado con fieltro hasta a* -6.",
+    "a_felt_max": -2,
+    "l_obj_low": 120,
+    "l_obj_min": 195,
+    "a_bright_min": -10
+  },
+  "segmentation": {
+    "morph_kernel": 7,
+    "die_area_min_frac": 0.35,
+    "die_area_max_frac": 1.8,
+    "touching_area_frac": 1.8,
+    "aspect_max": 1.6,
+    "solidity_min": 0.8,
+    "seam_kernel_frac": 0.25,
+    "seam_blackhat_min": 25,
+    "border_margin_px": 3,
+    "hull_rescue_min": 0.55,
+    "felt_edge_max_frac": 0.2
+  },
+  "die": {
+    "_comment": "Lado real del dado (mm) y area esperada en px (0 = estimar con la mediana de la escena).",
+    "side_mm": 16.0,
+    "expected_area_px": 0
+  },
+  "face": {
+    "size_px": 128,
+    "inner_frac": 0.8,
+    "ink_min": 70,
+    "min_component_frac": 0.004,
+    "min_hole_frac": 0.002,
+    "face_l_min": 170,
+    "symbol_close_px": 3,
+    "ink_ratio_max": 0.45,
+    "background_s_max": 80,
+    "background_a_min": -5,
+    "relative_component_min": 0.2,
+    "geometry_close_px": 15,
+    "geometry_close_shape": "ellipse"
+  },
+  "color": {
+    "_comment": "Color de la tinta en Lab. Medir con calibrate.py features (mean_a).",
+    "red_a_min": 20,
+    "blue_b_max": -20
+  },
+  "classes": [
+    "7",
+    "8",
+    "J",
+    "Q",
+    "K",
+    "A"
+  ],
+  "tree": {
+    "feature": "n_main_comp",
+    "threshold": 3.5,
+    "why": "Contar componentes con al menos el 20% del area de la mayor evita que restos pequenos de un lateral se confundan con los 7 u 8 puntos.",
+    "right": {
+      "feature": "red_frac",
+      "threshold": 0.35,
+      "why": "Tinta roja si supera el 35% de los pixeles de tinta con a* >=20: tolera bordes negros/grises y rojo palido. El umbral previo del 50% rechazaba una K real con 44%.",
+      "left": {
+        "label": "7"
+      },
+      "right": {
+        "label": "8"
+      }
+    },
+    "left": {
+      "feature": "red_frac",
+      "threshold": 0.35,
+      "why": "Tinta roja si supera el 35% de los pixeles de tinta con a* >=20: tolera bordes negros/grises y rojo palido. El umbral previo del 50% rechazaba una K real con 44%.",
+      "left": {
+        "feature": "solidity_closed",
+        "threshold": 0.65,
+        "why": "Solidez tras cierre eliptico 15x15 sobre cara 128x128: une pequenos cortes de Q en distintas orientaciones, manteniendo abierta la J. Umbral 0.65.",
+        "left": {
+          "label": "J"
+        },
+        "right": {
+          "label": "Q"
+        }
+      },
+      "right": {
+        "feature": "solidity",
+        "threshold": 0.8,
+        "why": "El As es un disco relleno: llena su envolvente convexa (solidez 0.96-0.98 en fotos reales). La K tiene trazos y huecos (0.37-0.63). Umbral = punto medio. Mas robusto que la circularidad, que caia a 0.53 cuando un brillo mordia el punto del As.",
+        "left": {
+          "label": "K"
+        },
+        "right": {
+          "label": "A"
+        }
+      }
+    }
+  },
+  "perspective": {
+    "_comment": "Lejos del centro de la foto se ven caras laterales. Se recorta la cara de arriba: cuadrado de lado = mediana del lado menor de los dados, en el extremo mas lejano al centro. Solo con 3 o mas dados.",
+    "enabled": true,
+    "min_dice": 3,
+    "side_percentile": 50,
+    "min_lateral_frac": 0.12,
+    "color_lateral_enabled": true
+  },
+  "recovery": {
+    "enabled": true,
+    "segmentation": {
+      "aspect_max": 2.1,
+      "felt_edge_max_frac": 1.0,
+      "border_margin_px": 0,
+      "roi_margin_iterations": 0,
+      "allow_image_edge": true,
+      "retain_edge_components": true
+    },
+    "_comment": "Toda la superficie visible: sin erosion del tapete, sin excluir el borde de imagen. Conservar componentes con al menos 30% de solapamiento con el tapete. Fallback conservador para dados pegados al carton. Parametros experimentales, comprobar con fotos nuevas."
+  },
+  "exposure": {
+    "enabled": true,
+    "low_reference": 210,
+    "target": 240,
+    "max_gain": 2.0
+  }
+}

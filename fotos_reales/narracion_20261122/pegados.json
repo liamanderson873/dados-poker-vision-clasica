@@ -1,0 +1,10 @@
+{
+  "labels": [
+    "K",
+    "Q",
+    "J",
+    "8",
+    "7"
+  ],
+  "annotation_source": "Anotación visual de las caras principales, anterior a ejecutar el detector"
+}

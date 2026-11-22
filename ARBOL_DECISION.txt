@@ -1,0 +1,21 @@
+[n_main_comp <= 3.5]   # Contar componentes con al menos el 20% del area de la mayor evita que restos pequenos de un lateral se confundan con los 7 u 8 puntos.
+  si:
+    [red_frac <= 0.35]   # Tinta roja si supera el 35% de los pixeles de tinta con a* >=20: tolera bordes negros/grises y rojo palido. El umbral previo del 50% rechazaba una K real con 44%.
+      si:
+        [solidity_closed <= 0.65]   # Solidez tras cierre eliptico 15x15 sobre cara 128x128: une pequenos cortes de Q en distintas orientaciones, manteniendo abierta la J. Umbral 0.65.
+          si:
+            -> J
+          no:
+            -> Q
+      no:
+        [solidity <= 0.8]   # El As es un disco relleno: llena su envolvente convexa (solidez 0.96-0.98 en fotos reales). La K tiene trazos y huecos (0.37-0.63). Umbral = punto medio. Mas robusto que la circularidad, que caia a 0.53 cuando un brillo mordia el punto del As.
+          si:
+            -> K
+          no:
+            -> A
+  no:
+    [red_frac <= 0.35]   # Tinta roja si supera el 35% de los pixeles de tinta con a* >=20: tolera bordes negros/grises y rojo palido. El umbral previo del 50% rechazaba una K real con 44%.
+      si:
+        -> 7
+      no:
+        -> 8
